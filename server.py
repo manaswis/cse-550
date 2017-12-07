@@ -5,7 +5,7 @@ import requests
 import traceback
 import inspect
 from flask import Flask, render_template, request, url_for
-
+from db_functions import *
 
 app = Flask(__name__)
 
@@ -22,8 +22,7 @@ def server(username='user1'):
 		"filename": filename,
 		"filepath": filepath
 	}
-	errors = []
-	
+
 	if request.method == "POST":
 		try:
 
@@ -36,10 +35,18 @@ def server(username='user1'):
 				question1 = request.form['question1']
 				question2 = request.form['question2']
 				question3 = request.form['question3']
-				
-				current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
-				# Get next image to load if data submitted is fine
+				print("\nSubmitted Data\n")
+				print("\tQuestion1: " + question1)
+				print("\tQuestion2: " + question2)
+				print("\tQuestion3: " + question3)
+				print("\tCurrent: " + current_image)
+				print("\n")
+				
+				# TODO: Store respones to the database
+
+				# Get next image to load
+				current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 				file_list = sorted(os.listdir(current_dir + url_for('static', filename='images')))
 
 				n_files = len(file_list)
@@ -57,11 +64,7 @@ def server(username='user1'):
 					content['filepath'] = url_for('static', filename='images/' + content['filename'])
 
 
-				print("Question1: " + question1)
-				print("Question2: " + question2)
-				print("Question3: " + question3)
-				print("Current: " + current_image)
-				print("Next: " + content['filename'])
+				print("Next Image: " + content['filename'])
 			
 			else:
 				content['errors'].append("Some or all fields are empty!")
@@ -71,23 +74,19 @@ def server(username='user1'):
 			print(traceback.format_exc())
 	
 	# TODO: Get the metadata of the image from the database and populate content dict
-	content["original_label"] = "Curb Ramp"
+	
+	image_md = query_db('select label_type from ground_truth where filename = ?',
+				[content['filename']], one=True)
+	content["original_label"] = image_md['label_type']
 	
 	return render_template('tool.html', **content)
-
-def init_db():
-    with app.app_context():
-        db = get_db()
-        with app.open_resource('schema.sql', mode='r') as f:
-            db.cursor().executescript(f.read())
-        db.commit()
 
 if __name__ == '__main__':
 
 	if (len(sys.argv) > 1):
 		if sys.argv[1] == "initdb":
 			print("Initializing database")
+			init_db()
 			sys.exit(0)
-			# init_db()
 	else:
 		app.run()
