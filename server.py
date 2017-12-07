@@ -71,7 +71,8 @@ def server(username='user1'):
 			content['errors'].append(ex.message)
 			print(traceback.format_exc())
 	
-	# Get list of images from the folder and the associated metadata from the database
+	# TODO: Get the metadata of the image from the database and populate content dict
+	content["original_label"] = "Curb Ramp"
 	
 	return render_template('tool.html', **content)
 
