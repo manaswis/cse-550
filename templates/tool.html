@@ -8,8 +8,8 @@
 </head>
 <body>
 	<div class="container">
-		{% if name %}
-	 	  <h1>Hello {{ name }}!</h1>
+		{% if username %}
+	 	  <h1>Hello {{ username }}!</h1>
 		{% else %}
 		  <h1>Hello!</h1>
 		{% endif %}
@@ -24,7 +24,7 @@
 	            <h3 class="error">{{ error }}</h4>
 	          {% endfor %}
 	        <br>
-			<form action= {{ "/" ~ name }} method="POST">
+			<form action= {{ "/" ~ username }} method="POST">
 				<ol>
 					<li> 
 						Is this a "Volunteer Label Type from the database"? 
