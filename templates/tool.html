@@ -1,47 +1,72 @@
 <!doctype html>
 <html>
 <head>
-	<title>CSE 500 Project Application</title>
+	<title>CSE 500 Project Tool</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" media="screen">
 	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css')}}"> 
 </head>
+<script type="text/javascript">
+	$(document).ready(function() {
+
+		//jQuery code goes here
+
+		// Questions can't be blank
+		$('#question1').on('input', function() {
+			var input=$(this);
+			var is_name=input.val();
+			if(is_name){input.removeClass("invalid").addClass("valid");}
+			else{input.removeClass("valid").addClass("invalid");}
+		});
+		$("#btnSubmit").click(function(event){
+			alert('No errors: Form will be submitted');
+		});	
+	});
+</script>
 <body>
 	<div class="container">
 		{% if name %}
-	 	  <h1>Hellozzzz {{ name }}!</h1>
+	 	  <h1>Hello {{ name }}!</h1>
 		{% else %}
 		  <h1>Hello!</h1>
 		{% endif %}
 
 		<!-- Pull image name from the CSV that holds the GT label information including image list -->
 		<div class="img-container">
-			<img src="{{url_for('static', filename='images/test1.jpeg')}}">
+			<img src={{ filepath }}>
 		</div>
 		<div class="question-container">
-			<form action= "" type="POST">
+			<form action= {{ "/" ~ name }} method="POST">
 				<ol>
 					<li> 
-						Is this a "Volunteer Label Type from the database" <br/>
-						<input type="radio" name = "question1" value = "yes" /> Yes
-						<input type="radio" name = "question1" value = "no" /> No
+						Is this a "Volunteer Label Type from the database"? 
+						<span class="error">This field is required</span><br/>
+						<input type="radio" id="question1" name="question1" value = "yes" /> &nbsp; Yes &nbsp;
+						<input type="radio" id="question1" name="question1" value = "no" /> &nbsp; No
 					</li><br/>
 					<li>
-						How confident are you in your response? <br/>
-						<input type="radio" name = "question2" value = "50per" />  Totally uncertain, a coin toss (about 50% chance of being correct) <br/>
-						<input type="radio" name = "question2" value = "60per" /> A little confident (about 60% chance of being correct) <br/>
-						<input type="radio" name = "question2" value = "70per" /> Somewhat confident (about 70% chance of being correct) <br/>
-						<input type="radio" name = "question2" value = "80per" /> High confidence (about 80% chance of being correct <br/>
-						<input type="radio" name = "question2" value = "90per" /> Very high confidence (about 90% chance of being correct) <br/>
-						<input type="radio" name = "question2" value = "100per" /> Certain (about 100% chance of being correct) <br/>
+						How confident are you in your response? 
+						<span class="error">This field is required</span><br/>
+						<input type="radio" id="question2" name="question2" value = "50per" /> &nbsp;Totally uncertain, a coin toss (about 50% chance of being correct) <br/>
+						<input type="radio" id="question2" name="question2" value = "60per" /> &nbsp;A little confident (about 60% chance of being correct) <br/>
+						<input type="radio" id="question2" name="question2" value = "70per" /> &nbsp;Somewhat confident (about 70% chance of being correct) <br/>
+						<input type="radio" id="question2" name="question2" value = "80per" /> &nbsp;High confidence (about 80% chance of being correct <br/>
+						<input type="radio" id="question2" name="question2" value = "90per" /> &nbsp;Very high confidence (about 90% chance of being correct) <br/>
+						<input type="radio" id="question2" name="question2" value = "100per" /> &nbsp;Certain (about 100% chance of being correct) <br/>
 					</li><br/>
 					<li> 
-						Give an estimate of the percentage of people who guessed it as “yes”. Enter a number between 1 - 100%
-						<input type="text" name = "question3" />
+						Give an estimate of the percentage of people who guessed it as “yes”. <span class="error">This field is required</span><br/>
+						Enter a number between 1 - 100% <input type="text" id="question3" name="question3" />
 					</li>
 				</ol>
-				<button type="submit" name="submit" class="btn btn-default center">Submit Response</button>
-		</form>
+				<input type="hidden" name="current_image" value={{ filename }}>
+				<button type="submit" id="btnSubmit" name="submit" class="btn btn-default center" id="">Submit Response</button>
+			</form>
+			<br>
+	          {% for error in errors %}
+	            <h4>{{ error }}</h4>
+	          {% endfor %}
+	        <br>
 		</div>
 	</div>
 	<script src="//code.jquery.com/jquery-2.2.1.min.js"></script>
