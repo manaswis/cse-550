@@ -4,7 +4,7 @@
 	<title>CSE 500 Project Application</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" media="screen">
-	<link rel="stylesheet" type="text/css" href="http://127.0.0.1:5000/style.css"> 
+	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='style.css')}}"> 
 </head>
 <body>
 	<div class="container">
@@ -15,30 +15,34 @@
 		{% endif %}
 
 		<!-- Pull image name from the CSV that holds the GT label information including image list -->
-		<div class="img-container"><img src="{{url_for('static', filename='images/test1.jpeg')}}"></div> <br/>
-		<form action= "" type="POST">
-			<ol>
-				<li> 
-					Is this a "Volunteer Label Type from the database" <br/>
-					<input type="radio" name = "question1" value = "yes" /> Yes
-					<input type="radio" name = "question1" value = "no" /> No
-				</li><br/>
-				<li>
-					How confident are you in your response? <br/>
-					<input type="radio" name = "question2" value = "50per" />  Totally uncertain, a coin toss (about 50% chance of being correct) <br/>
-					<input type="radio" name = "question2" value = "60per" /> A little confident (about 60% chance of being correct) <br/>
-					<input type="radio" name = "question2" value = "70per" /> Somewhat confident (about 70% chance of being correct) <br/>
-					<input type="radio" name = "question2" value = "80per" /> High confidence (about 80% chance of being correct <br/>
-					<input type="radio" name = "question2" value = "90per" /> Very high confidence (about 90% chance of being correct) <br/>
-					<input type="radio" name = "question2" value = "100per" /> Certain (about 100% chance of being correct) <br/>
-				</li><br/>
-				<li> 
-					Give an estimate of the percentage of people who guessed it as “yes”. Enter a number between 1 - 100%
-					<input type="text" name = "question3" />
-				</li>
-			</ol>
-			<button type="submit" name="submit" class="btn btn-default">Submit Response</button>
+		<div class="img-container">
+			<img src="{{url_for('static', filename='images/test1.jpeg')}}">
+		</div>
+		<div class="question-container">
+			<form action= "" type="POST">
+				<ol>
+					<li> 
+						Is this a "Volunteer Label Type from the database" <br/>
+						<input type="radio" name = "question1" value = "yes" /> Yes
+						<input type="radio" name = "question1" value = "no" /> No
+					</li><br/>
+					<li>
+						How confident are you in your response? <br/>
+						<input type="radio" name = "question2" value = "50per" />  Totally uncertain, a coin toss (about 50% chance of being correct) <br/>
+						<input type="radio" name = "question2" value = "60per" /> A little confident (about 60% chance of being correct) <br/>
+						<input type="radio" name = "question2" value = "70per" /> Somewhat confident (about 70% chance of being correct) <br/>
+						<input type="radio" name = "question2" value = "80per" /> High confidence (about 80% chance of being correct <br/>
+						<input type="radio" name = "question2" value = "90per" /> Very high confidence (about 90% chance of being correct) <br/>
+						<input type="radio" name = "question2" value = "100per" /> Certain (about 100% chance of being correct) <br/>
+					</li><br/>
+					<li> 
+						Give an estimate of the percentage of people who guessed it as “yes”. Enter a number between 1 - 100%
+						<input type="text" name = "question3" />
+					</li>
+				</ol>
+				<button type="submit" name="submit" class="btn btn-default center">Submit Response</button>
 		</form>
+		</div>
 	</div>
 	<script src="//code.jquery.com/jquery-2.2.1.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>

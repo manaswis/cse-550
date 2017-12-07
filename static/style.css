@@ -1,8 +1,27 @@
-body{
-	display: center;
-	background-color:lightblue;
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+	margin: auto;
+	display: block;
+	width: 90%;
+	/*padding-left:100px; */
+}
+
+.center {
+	margin: auto;
 }
 
 .img-container {
-	margin: auto;
+	width:50%;
+	margin: 0px;
+	float: left;
+}
+.question-container {
+	width: 45%;
+	float: right;
+	position: relative;
+	padding-top:20px;
 }
