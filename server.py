@@ -66,7 +66,6 @@ def server(username='user1'):
 			else:
 				content['errors'].append("Some or all fields are empty!")
 
-
 		except Exception as ex:
 			content['errors'].append(ex.message)
 			print(traceback.format_exc())
@@ -76,5 +75,19 @@ def server(username='user1'):
 	
 	return render_template('tool.html', **content)
 
+def init_db():
+    with app.app_context():
+        db = get_db()
+        with app.open_resource('schema.sql', mode='r') as f:
+            db.cursor().executescript(f.read())
+        db.commit()
+
 if __name__ == '__main__':
-	app.run()
+
+	if (len(sys.argv) > 1):
+		if sys.argv[1] == "initdb":
+			print("Initializing database")
+			sys.exit(0)
+			# init_db()
+	else:
+		app.run()

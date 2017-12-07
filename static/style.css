@@ -13,10 +13,6 @@ body {
 	/*padding-left:100px; */
 }
 
-.header {
-	display: block;
-}
-
 body .popover {
   max-width: 1000px;
 }
