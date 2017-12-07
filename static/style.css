@@ -13,6 +13,10 @@ body {
 	/*padding-left:100px; */
 }
 
+.thankyou {
+	text-align: center;
+}
+
 .center {
 	margin: auto;
 	display: block;
@@ -26,16 +30,10 @@ body {
 .question-container {
 	width: 45%;
 	float: right;
-	position: relative;
 	padding-top:20px;
 }
 
 .error{
-	display: none;
 	margin-left: 10px;
+	color:red;
 }		
-
-.error_show{
-	color: red;
-	margin-left: 10px;
-}
