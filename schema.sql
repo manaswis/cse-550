@@ -7,7 +7,7 @@ CREATE TABLE ground_truth (
 CREATE TABLE response (
   r_id integer PRIMARY KEY AUTOINCREMENT,
   q_id integer,
-  response text,
+  answer text,
   username text
 );
 

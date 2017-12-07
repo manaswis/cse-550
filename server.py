@@ -32,9 +32,9 @@ def server(username='user1'):
 				'question2' in request.form and 
 				'question3' in request.form):
 
-				question1 = request.form['question1']
-				question2 = request.form['question2']
-				question3 = request.form['question3']
+				question1 = str(request.form['question1'])
+				question2 = str(request.form['question2'])
+				question3 = str(request.form['question3'])
 
 				print("\nSubmitted Data\n")
 				print("\tQuestion1: " + question1)
@@ -42,8 +42,15 @@ def server(username='user1'):
 				print("\tQuestion3: " + question3)
 				print("\tCurrent: " + current_image)
 				print("\n")
+
+				user = str(username)
+				qresponse = [(1, question1, user), 
+							(2, question2, user), 
+							(3, question3, user)]
+				print(qresponse)
 				
-				# TODO: Store respones to the database
+				# Store responses to the database
+				query_db('insert into response (q_id,answer,username) values (?,?,?) ', qresponse, executemany=True)
 
 				# Get next image to load
 				current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))

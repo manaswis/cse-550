@@ -6,10 +6,6 @@ from flask import Flask
 app = Flask(__name__)
 DATABASE = 'cse550proj.db'
 
-def make_dicts(cursor, row):
-	return dict((cursor.description[idx][0], value)
-				for idx, value in enumerate(row))
-
 def get_db():
 	db = getattr(g, '_database', None)
 	if db is None:
@@ -24,8 +20,14 @@ def init_db():
 			db.cursor().executescript(f.read())
 		db.commit()
 
-def query_db(query, args=(), one=False):
-	cur = get_db().execute(query, args)
+def query_db(query, args=(), one=False, executemany=False):
+	cur = ''
+	if (executemany):
+		print("Executing many")
+		cur = get_db().executemany(query, args)
+		get_db().commit()
+	else:
+		cur = get_db().execute(query, args)
 	rv = cur.fetchall()
 	cur.close()
 	return (rv[0] if rv else None) if one else rv
