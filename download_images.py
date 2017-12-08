@@ -91,10 +91,11 @@ if __name__ == '__main__':
         img_filename = hard_level + '_' + cluster_id + '_' + label_id + '_' + pano_id + '.jpeg'
         labels_df.ix[index,'img_filename'] = img_filename
 
+        # Download
         gsv_url = ("https://maps.googleapis.com/maps/api/streetview?size=720x480&pano=%s&heading=%spitch=%s&fov=%s&key=AIzaSyDzYR4m-3upEQ-bIQam35ixN1BgxnPsY7k" 
                     % (pano_id, heading, pitch, fov))
         response = urllib.urlretrieve(gsv_url, 'static/test_images/' + img_filename)
 
     print(labels_df)
-    labels_df.to_csv('labels_1.csv')
+    labels_df.to_csv('static/filtered_labels.csv',index=False)
 

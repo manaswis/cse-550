@@ -4,16 +4,36 @@ import sys
 import requests
 import traceback
 import inspect
+import pandas as pd
 from flask import Flask, render_template, request, url_for
 from db_functions import *
 
 app = Flask(__name__)
 
+@app.route("/initdb")
+def init_db():
+	print("Initializing database")
+
+	with app.app_context():
+		current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+		df = pd.read_csv(current_dir + '/static/labels.csv')
+		entries = []
+		for idx, row in df.iterrows():
+			marked_label = row['marked_label']
+			correct = row['correct']
+			img_filename = row['img_filename']
+
+			entries.append((img_filename, marked_label, correct))
+
+		print(entries)
+		query = "INSERT INTO ground_truth (filename, marked_label, correct) VALUES (?, ?, ?)"
+		query_db(query, entries, executemany=True)
+
 @app.route("/<username>", methods=['GET', 'POST'])
 def server(username='user1'):
 
 	# Default filename
-	filename = 'test1.jpeg'
+	filename = 'image0.jpeg'
 	filepath = url_for('static', filename='images/' + filename)
 
 	content = {
@@ -53,22 +73,21 @@ def server(username='user1'):
 
 				# Get next image to load
 				current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-				file_list = sorted(os.listdir(current_dir + url_for('static', filename='images')))
-
+				file_list = sorted([filename for filename in os.listdir(current_dir + url_for('static', filename='images')) 
+									if filename.startswith("image")])
 				n_files = len(file_list)
 
 				current_img_idx = ([i for i, x in enumerate(file_list) if x == current_image])[0]
 				print("Curr Image Index: ", current_img_idx)
 
-				if (current_img_idx + 1) >= n_files:
+				if current_img_idx + 1 == n_files:
 					print ("No files left")
 					return render_template('thankyou.html', username=username)
 				else:
-					next_image_idx = current_img_idx + 2
+					next_image_idx = current_img_idx + 1
 					print("Next image index: ", next_image_idx)
-					content['filename'] = 'test' + str(next_image_idx) + '.jpeg'
+					content['filename'] = 'image' + str(next_image_idx) + '.jpeg'
 					content['filepath'] = url_for('static', filename='images/' + content['filename'])
-
 
 				print("Next Image: " + content['filename'])
 			
@@ -81,18 +100,11 @@ def server(username='user1'):
 	
 	# TODO: Get the metadata of the image from the database and populate content dict
 	
-	image_md = query_db('select label_type from ground_truth where filename = ?',
+	image_md = query_db('select marked_label from ground_truth where filename = ?',
 				[content['filename']], one=True)
-	content["original_label"] = image_md['label_type']
+	content["original_label"] = image_md['marked_label']
 	
 	return render_template('tool.html', **content)
 
 if __name__ == '__main__':
-
-	if (len(sys.argv) > 1):
-		if sys.argv[1] == "initdb":
-			print("Initializing database")
-			init_db()
-			sys.exit(0)
-	else:
-		app.run()
+	app.run()
