@@ -1,3 +1,4 @@
 *.pyc
 static/test_images/
 *.csv
+~$*
