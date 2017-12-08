@@ -23,7 +23,6 @@ def init_db():
 def query_db(query, args=(), one=False, executemany=False):
 	cur = ''
 	if (executemany):
-		print("Executing many")
 		cur = get_db().executemany(query, args)
 		get_db().commit()
 	else:

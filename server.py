@@ -47,7 +47,6 @@ def server(username='user1'):
 				qresponse = [(1, question1, user), 
 							(2, question2, user), 
 							(3, question3, user)]
-				print(qresponse)
 				
 				# Store responses to the database
 				query_db('insert into response (q_id,answer,username) values (?,?,?) ', qresponse, executemany=True)
