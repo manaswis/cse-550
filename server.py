@@ -40,7 +40,8 @@ def server(username='user1'):
 		"username": username,
 		"errors": [],
 		"filename": filename,
-		"filepath": filepath
+		"filepath": filepath,
+		"image_no": 1
 	}
 
 	if request.method == "POST":
@@ -86,6 +87,7 @@ def server(username='user1'):
 				else:
 					next_image_idx = current_img_idx + 1
 					print("Next image index: ", next_image_idx)
+					content["image_no"] = next_image_idx + 1
 					content['filename'] = 'image' + str(next_image_idx) + '.jpeg'
 					content['filepath'] = url_for('static', filename='images/' + content['filename'])
 

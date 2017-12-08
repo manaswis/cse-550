@@ -32,18 +32,22 @@
 		<br/>
 
 		<div class="img-container">
-			<img src={{ filepath }}>
+			<img src={{ filepath }} width = 100%>
 		</div>
 		<div class="question-container">
-			<br>
+			<h2 style="padding-left: 30px">Image {{ image_no }}/10 </h2>
 	          {% for error in errors %}
-	            <h3 class="error">{{ error }}</h4>
+	            <span class="error">{{ error }}</span>
 	          {% endfor %}
 	        <br>
 			<form action= {{ "/" ~ username }} method="POST">
 				<ol>
 					<li> 
-						Is the applied label <b>{{ original_label }}</b> correct? 
+						{% if original_label == "Obstacle in a Path" %}
+							Is there an <span class="labeltype">{{ original_label }}</span> within the black box?
+						{% else %}
+							Is there a <span class="labeltype">{{ original_label }}</span> within the black box?
+						{% endif %} 
 						<br/>
 						<input type="radio" id="question1" name="question1" value = "yes" /> &nbsp; Yes &nbsp;
 						<input type="radio" id="question1" name="question1" value = "no" /> &nbsp; No

@@ -27,17 +27,22 @@ body .popover {
 }
 
 .img-container {
-	width:50%;
+	width:60%;
 	margin: 0px;
 	float: left;
 }
 .question-container {
-	width: 45%;
+	width: 40%;
 	float: right;
-	padding-top:20px;
+	font-size: 12px
 }
 
+.labeltype {
+	font-weight: bolder;
+	font-color:green;
+}
 .error{
 	margin-left: 10px;
 	color:red;
+	padding-left: 30px
 }		
