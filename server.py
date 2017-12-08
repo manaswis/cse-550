@@ -64,15 +64,7 @@ def server(username='user1'):
 				print("\tCurrent: " + current_image)
 				print("\n")
 
-				user = str(username)
-				qresponse = [(1, question1, user), 
-							(2, question2, user), 
-							(3, question3, user)]
-				
-				# Store responses to the database
-				query_db('insert into response (q_id,answer,username) values (?,?,?) ', qresponse, executemany=True)
-
-				# Get next image to load
+				# Get current image index
 				current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 				file_list = sorted([filename for filename in os.listdir(current_dir + url_for('static', filename='images')) 
 									if filename.startswith("image")])
@@ -81,6 +73,18 @@ def server(username='user1'):
 				current_img_idx = ([i for i, x in enumerate(file_list) if x == current_image])[0]
 				print("Curr Image Index: ", current_img_idx)
 
+				image_id = current_img_idx + 1
+
+				# Build a response
+				user = str(username)
+				qresponse = [(image_id, 1, question1, user), 
+							(image_id, 2, question2, user), 
+							(image_id, 3, question3, user)]
+				
+				# Store responses to the database
+				query_db('insert into response (img_id, q_id,answer,username) values (?,?,?,?) ', qresponse, executemany=True)
+
+				# Get next image to load
 				if current_img_idx + 1 == n_files:
 					print ("No files left")
 					return render_template('thankyou.html', username=username)
