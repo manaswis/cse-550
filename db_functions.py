@@ -24,9 +24,9 @@ def query_db(query, args=(), one=False, executemany=False):
 	cur = ''
 	if (executemany):
 		cur = get_db().executemany(query, args)
-		get_db().commit()
 	else:
 		cur = get_db().execute(query, args)
+	get_db().commit()
 	rv = cur.fetchall()
 	cur.close()
 	return (rv[0] if rv else None) if one else rv

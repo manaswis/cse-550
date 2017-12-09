@@ -5,7 +5,7 @@ import requests
 import traceback
 import inspect
 import pandas as pd
-from flask import Flask, render_template, request, url_for
+from flask import Flask, render_template, request, url_for, g
 from db_functions import *
 
 app = Flask(__name__)
@@ -28,6 +28,42 @@ def init_db():
 		print(entries)
 		query = "INSERT INTO ground_truth (filename, marked_label, correct) VALUES (?, ?, ?)"
 		query_db(query, entries, executemany=True)
+
+"""
+Temporary method to fix data in the database
+"""
+@app.route("/temp")
+def temp():
+	print("Initializing database")
+
+	pd.set_option('display.max_rows', 500)
+	with app.app_context():
+		responses = query_db('select * from response where username == ?',['mikey'])
+		responses_df = pd.DataFrame(responses, columns=['r_id', 'img_id', 'q_id', 'answer', 'username'])
+		# print(responses_df)
+
+		count = 1
+		img_id = 1
+		for idx, row in responses_df.iterrows():
+			responses_df.ix[idx, 'img_id'] = int(img_id)
+
+			r_id = responses_df.ix[idx, 'r_id']
+
+			print(r_id, '=', img_id)
+			query = 'UPDATE response SET img_id=? where r_id=?'
+			# query_db(query, [int(img_id), int(r_id)])
+
+			if (count == 3):
+				count = 1
+				
+				if(img_id == 10):
+					img_id = 1
+				else:
+					img_id += 1
+			else:
+				count += 1
+		
+		print(responses_df)
 
 @app.route("/<username>", methods=['GET', 'POST'])
 def server(username='user1'):
