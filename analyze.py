@@ -11,7 +11,7 @@ def plot_results(plot_df, filename):
 	plot_df.plot.bar(rot=0)
 	plt.xlabel('Image IDs')
 	plt.ylabel('Counts')
-	plt.savefig('analysis/' + filename, format="png", bbox_inches='tight', dpi=500)
+	plt.savefig('analysis/' + filename, format="pdf", bbox_inches='tight', dpi=500)
 	# plt.show()
 
 
@@ -85,4 +85,4 @@ sp_results = pd.DataFrame(results, columns=['image_id', 'yes_confidence', 'no_co
 print sp_results
 
 # Plot results
-plot_results(sp_results, 'surprisingly_popular.png')
+plot_results(sp_results, 'surprisingly_popular.pdf')
