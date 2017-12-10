@@ -75,7 +75,8 @@ for image_id in image_id_list:
 	else: 
 		no_count = 0
 
-	if yes_count > no_count:
+	# Errs towards yes'
+	if yes_count >= no_count:
 		selected_answer = 'yes'
 	else:
 		selected_answer = 'no'
@@ -96,12 +97,20 @@ Method 2: Surprisingly Popular (SP) Algorithm
 Relies on Bayesian Truth Serum (BTS) score
 """
 
+def take_log(value):
+
+	try:
+		log_value = math.log(value)
+	except ValueError, e:
+		log_value = 0
+	return log_value
+
 n = 11 # number of respondents
 results = []
 for image_id in image_id_list:
 	a_df = analyze_df[analyze_df.image_id == image_id]
 	
-	print "Image: ", image_id
+	print "\nImage: ", image_id
 	# Step 1a: Average mean xk_mean of the votes for each answer choice
 	xk_mean_yes = mj_results.ix[image_id]['yes'] / n
 	xk_mean_no = mj_results.ix[image_id]['no'] / n
@@ -114,12 +123,11 @@ for image_id in image_id_list:
 	for idx, row in a_df.iterrows():
 
 		if row['vote'] == 'yes':
-			yk_logsum_yes += math.log(row['percent_agreement'])
-			yk_logsum_no += math.log(1 - row['percent_agreement'])
+			yk_logsum_yes += take_log(row['percent_agreement'])
+			yk_logsum_no += take_log(1 - row['percent_agreement'])
 		else:
-			yk_logsum_yes += math.log(1 - row['percent_agreement'])
-			yk_logsum_no += math.log(row['percent_agreement'])
-		print yk_logsum_yes
+			yk_logsum_yes += take_log(1 - row['percent_agreement'])
+			yk_logsum_no += take_log(row['percent_agreement'])
 
 	yk_gmean_yes = yk_logsum_yes / n
 	yk_gmean_no = yk_logsum_no / n
@@ -134,35 +142,34 @@ for image_id in image_id_list:
 			if (yk_gmean_yes == 0):
 				first_term = 0
 			else:
-				print yk_gmean_yes
-				first_term = math.log(xk_mean_yes / yk_gmean_yes)
+				first_term = take_log(xk_mean_yes / yk_gmean_yes)
 
 			if xk_mean_yes == 0:
 				 second_term_a = 0
 			else:
-				second_term_a = xk_mean_yes * math.log(row['percent_agreement'] / xk_mean_yes)
+				second_term_a = xk_mean_yes * take_log(row['percent_agreement'] / xk_mean_yes)
 
 			if xk_mean_no == 0:
 				second_term_b = 0
 			else:
-				second_term_b = xk_mean_no *  math.log((1 - row['percent_agreement']) / xk_mean_no)
+				second_term_b = xk_mean_no *  take_log((1 - row['percent_agreement']) / xk_mean_no)
 			u_r =  first_term + (second_term_a + second_term_b)
 		
 		else:
 			if (yk_gmean_no == 0):
 				first_term = 0
 			else:
-				first_term = math.log(xk_mean_no / yk_gmean_no)
+				first_term = take_log(xk_mean_no / yk_gmean_no)
 
 			if xk_mean_yes == 0:
 				 second_term_a = 0
 			else:
-				second_term_a = xk_mean_yes * math.log((1 - row['percent_agreement']) / xk_mean_yes)
+				second_term_a = xk_mean_yes * take_log((1 - row['percent_agreement']) / xk_mean_yes)
 
 			if xk_mean_no == 0:
 				second_term_b = 0
 			else:
-				second_term_b = xk_mean_no *  math.log(row['percent_agreement'] / xk_mean_no)
+				second_term_b = xk_mean_no *  take_log(row['percent_agreement'] / xk_mean_no)
 			
 			u_r =  first_term + (second_term_a + second_term_b)
 
@@ -170,16 +177,22 @@ for image_id in image_id_list:
 	bts_r_df = pd.DataFrame(bts_scores, columns=['username', 'bts_score', 'vote'])
 
 	# Step 3: Average BTS score ur_mean_k of all respondents endoring answer k
-	ur_mean_yes = bts_r_df[bts_r_df.vote == 'yes'].sum()/ (n * xk_mean_yes)
-	ur_mean_no = bts_r_df[bts_r_df.vote == 'no'].sum()/ (n * xk_mean_no)
+	# Get yes/no counts
+	ur_mean_yes = bts_r_df[bts_r_df.vote == 'yes']['bts_score'].sum()/ (n * xk_mean_yes)
+	ur_mean_no = bts_r_df[bts_r_df.vote == 'no']['bts_score'].sum()/ (n * xk_mean_no)
 
-	# Step 4: Choose the answerk that has the maximum score
-	if ur_mean_yes > ur_mean_no:
-		selected_answer = 'yes'
+	print "step3:", ur_mean_yes, ur_mean_no
+
+	# Step 4: Choose the answer k that has the maximum score
+	# Errs towards yes'
+	if ur_mean_yes >= ur_mean_no:
+		predicted_answer = 'yes'
 	else:
-		selected_answer = 'no'
+		predicted_answer = 'no'
 
-	results.append((image_id, gt_df.ix[image_id]['correct'], selected_answer))
+	print "image id:", image_id, predicted_answer
+
+	results.append((image_id, gt_df.ix[image_id]['correct'], predicted_answer))
 
 sp_results = pd.DataFrame(results, columns=['image_id', 'correct', 'predicted'])
 print "\n Surprisingly Popular (SP) Results\n", sp_results
