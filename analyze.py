@@ -102,6 +102,17 @@ def take_log(value):
 	try:
 		log_value = math.log(value)
 	except ValueError, e:
+		print "[log a] Exception", e
+		log_value = 0
+	return log_value
+
+def take_log_a_by_b(a, b):
+
+	c = math.pow(10, -6)
+	try:
+		log_value = take_log(c + (a / (b + c)))
+	except ValueError, e:
+		print "[log a/b] Exception", e
 		log_value = 0
 	return log_value
 
@@ -124,19 +135,19 @@ for image_id in image_id_list:
 		print "step1a:", xk_mean_yes, xk_mean_no
 
 		# Step 1b: Geometric mean yk_gmean of the predictions of percent agreement with answer k
-		yk_logsum_yes = 0
-		yk_logsum_no = 0
+		yk_product_yes = 1
+		yk_product_no = 1
 		for idx, row in a_df.iterrows():
 
 			if row['vote'] == 'yes':
-				yk_logsum_yes += take_log(row['percent_agreement'])
-				yk_logsum_no += take_log(1 - row['percent_agreement'])
+				yk_product_yes *= row['percent_agreement']
+				yk_product_no *= 1 - row['percent_agreement']
 			else:
-				yk_logsum_yes += take_log(1 - row['percent_agreement'])
-				yk_logsum_no += take_log(row['percent_agreement'])
+				yk_product_yes *= 1 - row['percent_agreement']
+				yk_product_no *= row['percent_agreement']
 
-		yk_gmean_yes = yk_logsum_yes / n
-		yk_gmean_no = yk_logsum_no / n
+		yk_gmean_yes = yk_product_yes ** (1.0 / n)
+		yk_gmean_no = yk_product_no ** (1.0 / n)
 
 		print "step1b:", yk_gmean_yes, yk_gmean_no
 
@@ -145,43 +156,20 @@ for image_id in image_id_list:
 		for idx, row in a_df.iterrows():
 
 			if row['vote'] == 'yes':
-				if (yk_gmean_yes == 0):
-					first_term = 0
-				else:
-					first_term = take_log(xk_mean_yes / yk_gmean_yes)
-
-				if xk_mean_yes == 0:
-					 second_term_a = 0
-				else:
-					second_term_a = xk_mean_yes * take_log(row['percent_agreement'] / xk_mean_yes)
-
-				if xk_mean_no == 0:
-					second_term_b = 0
-				else:
-					second_term_b = xk_mean_no *  take_log((1 - row['percent_agreement']) / xk_mean_no)
-				u_r =  first_term + (second_term_a + second_term_b)
+				first_term = take_log_a_by_b(xk_mean_yes, yk_gmean_yes)
+				second_term_yes = xk_mean_yes * take_log_a_by_b(row['percent_agreement'], xk_mean_yes)
+				second_term_no = xk_mean_no *  take_log_a_by_b((1 - row['percent_agreement']), xk_mean_no)
 			
 			else:
-				if (yk_gmean_no == 0):
-					first_term = 0
-				else:
-					first_term = take_log(xk_mean_no / yk_gmean_no)
-
-				if xk_mean_yes == 0:
-					 second_term_a = 0
-				else:
-					second_term_a = xk_mean_yes * take_log((1 - row['percent_agreement']) / xk_mean_yes)
-
-				if xk_mean_no == 0:
-					second_term_b = 0
-				else:
-					second_term_b = xk_mean_no *  take_log(row['percent_agreement'] / xk_mean_no)
+				first_term = take_log_a_by_b(xk_mean_no, yk_gmean_no)
+				second_term_yes = xk_mean_yes * take_log_a_by_b((1 - row['percent_agreement']), xk_mean_yes)
+				second_term_no = xk_mean_no *  take_log_a_by_b(row['percent_agreement'], xk_mean_no)
 				
-				u_r =  first_term + (second_term_a + second_term_b)
+			u_r =  first_term + (second_term_yes + second_term_no)
 
 			bts_scores.append((row['username'], u_r, row['vote']))
+		
 		bts_r_df = pd.DataFrame(bts_scores, columns=['username', 'bts_score', 'vote'])
-
 		print "step2: BTS Score\n", bts_r_df
 
 		# Step 3: Average BTS score ur_mean_k of all respondents endoring answer k
