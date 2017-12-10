@@ -5,13 +5,13 @@ import matplotlib.pyplot as plt
 
 matplotlib.style.use('ggplot')
 
-def plot_results(plot_df):
+def plot_results(plot_df, filename):
 	plot_df.index = plot_df.image_id
 	plot_df = plot_df.drop(['image_id', 'correct'], axis=1)
 	plot_df.plot.bar(rot=0)
 	plt.xlabel('Image IDs')
 	plt.ylabel('Counts')
-	plt.savefig('analysis/ majority_voting.png', format="png", bbox_inches='tight', dpi=500)
+	plt.savefig('analysis/' + filename, format="png", bbox_inches='tight', dpi=500)
 	# plt.show()
 
 
@@ -47,7 +47,7 @@ mj_results = pd.DataFrame(results, columns=['image_id', 'yes', 'no', 'correct'])
 print mj_results
 
 # Plot results
-# plot_results(mj_results)
+# plot_results(mj_results, 'majority_voting.png')
 
 """
 Method 2: surprisingly popular
@@ -85,4 +85,4 @@ sp_results = pd.DataFrame(results, columns=['image_id', 'yes_confidence', 'no_co
 print sp_results
 
 # Plot results
-plot_results(sp_results)
+plot_results(sp_results, 'surprisingly_popular.png')
