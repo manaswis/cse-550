@@ -111,84 +111,99 @@ for image_id in image_id_list:
 	a_df = analyze_df[analyze_df.image_id == image_id]
 	
 	print "\nImage: ", image_id
-	# Step 1a: Average mean xk_mean of the votes for each answer choice
-	xk_mean_yes = mj_results.ix[image_id]['yes'] / n
-	xk_mean_no = mj_results.ix[image_id]['no'] / n
 
-	print "step1a:", xk_mean_yes, xk_mean_no
+	# Only run the algorithm if there are disagreements
+	counts = a_df['vote'].value_counts()
+	if ('yes' in counts and 'no' in counts):
+		# Run the algorithm
 
-	# Step 1b: Geometric mean yk_gmean of the predictions of percent agreement with answer k
-	yk_logsum_yes = 0
-	yk_logsum_no = 0
-	for idx, row in a_df.iterrows():
+		# Step 1a: Average mean xk_mean of the votes for each answer choice
+		xk_mean_yes = mj_results.ix[image_id]['yes'] / n
+		xk_mean_no = mj_results.ix[image_id]['no'] / n
 
-		if row['vote'] == 'yes':
-			yk_logsum_yes += take_log(row['percent_agreement'])
-			yk_logsum_no += take_log(1 - row['percent_agreement'])
-		else:
-			yk_logsum_yes += take_log(1 - row['percent_agreement'])
-			yk_logsum_no += take_log(row['percent_agreement'])
+		print "step1a:", xk_mean_yes, xk_mean_no
 
-	yk_gmean_yes = yk_logsum_yes / n
-	yk_gmean_no = yk_logsum_no / n
+		# Step 1b: Geometric mean yk_gmean of the predictions of percent agreement with answer k
+		yk_logsum_yes = 0
+		yk_logsum_no = 0
+		for idx, row in a_df.iterrows():
 
-	print "step1b:", yk_gmean_yes, yk_gmean_no
-
-	# Step 2: BTS score u_r for each respondent r
-	bts_scores = []
-	for idx, row in a_df.iterrows():
-
-		if row['vote'] == 'yes':
-			if (yk_gmean_yes == 0):
-				first_term = 0
+			if row['vote'] == 'yes':
+				yk_logsum_yes += take_log(row['percent_agreement'])
+				yk_logsum_no += take_log(1 - row['percent_agreement'])
 			else:
-				first_term = take_log(xk_mean_yes / yk_gmean_yes)
+				yk_logsum_yes += take_log(1 - row['percent_agreement'])
+				yk_logsum_no += take_log(row['percent_agreement'])
 
-			if xk_mean_yes == 0:
-				 second_term_a = 0
-			else:
-				second_term_a = xk_mean_yes * take_log(row['percent_agreement'] / xk_mean_yes)
+		yk_gmean_yes = yk_logsum_yes / n
+		yk_gmean_no = yk_logsum_no / n
 
-			if xk_mean_no == 0:
-				second_term_b = 0
-			else:
-				second_term_b = xk_mean_no *  take_log((1 - row['percent_agreement']) / xk_mean_no)
-			u_r =  first_term + (second_term_a + second_term_b)
-		
-		else:
-			if (yk_gmean_no == 0):
-				first_term = 0
-			else:
-				first_term = take_log(xk_mean_no / yk_gmean_no)
+		print "step1b:", yk_gmean_yes, yk_gmean_no
 
-			if xk_mean_yes == 0:
-				 second_term_a = 0
-			else:
-				second_term_a = xk_mean_yes * take_log((1 - row['percent_agreement']) / xk_mean_yes)
+		# Step 2: BTS score u_r for each respondent r
+		bts_scores = []
+		for idx, row in a_df.iterrows():
 
-			if xk_mean_no == 0:
-				second_term_b = 0
-			else:
-				second_term_b = xk_mean_no *  take_log(row['percent_agreement'] / xk_mean_no)
+			if row['vote'] == 'yes':
+				if (yk_gmean_yes == 0):
+					first_term = 0
+				else:
+					first_term = take_log(xk_mean_yes / yk_gmean_yes)
+
+				if xk_mean_yes == 0:
+					 second_term_a = 0
+				else:
+					second_term_a = xk_mean_yes * take_log(row['percent_agreement'] / xk_mean_yes)
+
+				if xk_mean_no == 0:
+					second_term_b = 0
+				else:
+					second_term_b = xk_mean_no *  take_log((1 - row['percent_agreement']) / xk_mean_no)
+				u_r =  first_term + (second_term_a + second_term_b)
 			
-			u_r =  first_term + (second_term_a + second_term_b)
+			else:
+				if (yk_gmean_no == 0):
+					first_term = 0
+				else:
+					first_term = take_log(xk_mean_no / yk_gmean_no)
 
-		bts_scores.append((row['username'], u_r, row['vote']))
-	bts_r_df = pd.DataFrame(bts_scores, columns=['username', 'bts_score', 'vote'])
+				if xk_mean_yes == 0:
+					 second_term_a = 0
+				else:
+					second_term_a = xk_mean_yes * take_log((1 - row['percent_agreement']) / xk_mean_yes)
 
-	# Step 3: Average BTS score ur_mean_k of all respondents endoring answer k
-	# Get yes/no counts
-	ur_mean_yes = bts_r_df[bts_r_df.vote == 'yes']['bts_score'].sum()/ (n * xk_mean_yes)
-	ur_mean_no = bts_r_df[bts_r_df.vote == 'no']['bts_score'].sum()/ (n * xk_mean_no)
+				if xk_mean_no == 0:
+					second_term_b = 0
+				else:
+					second_term_b = xk_mean_no *  take_log(row['percent_agreement'] / xk_mean_no)
+				
+				u_r =  first_term + (second_term_a + second_term_b)
 
-	print "step3:", ur_mean_yes, ur_mean_no
+			bts_scores.append((row['username'], u_r, row['vote']))
+		bts_r_df = pd.DataFrame(bts_scores, columns=['username', 'bts_score', 'vote'])
 
-	# Step 4: Choose the answer k that has the maximum score
-	# Errs towards yes'
-	if ur_mean_yes >= ur_mean_no:
-		predicted_answer = 'yes'
+		print "step2: BTS Score\n", bts_r_df
+
+		# Step 3: Average BTS score ur_mean_k of all respondents endoring answer k
+		# Get yes/no counts
+		ur_mean_yes = bts_r_df[bts_r_df.vote == 'yes']['bts_score'].sum()/ (n * xk_mean_yes)
+		ur_mean_no = bts_r_df[bts_r_df.vote == 'no']['bts_score'].sum()/ (n * xk_mean_no)
+
+		print "step3:", ur_mean_yes, ur_mean_no
+
+		# Step 4: Choose the answer k that has the maximum score
+		# Errs towards yes'
+		if ur_mean_yes >= ur_mean_no:
+			predicted_answer = 'yes'
+		else:
+			predicted_answer = 'no'
+
 	else:
-		predicted_answer = 'no'
+		# Select the answer that's endorsed by everyone
+		if('yes' in counts):
+			predicted_answer = 'yes'
+		else:
+			predicted_answer = 'no'
 
 	print "image id:", image_id, predicted_answer
 
