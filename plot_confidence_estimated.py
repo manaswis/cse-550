@@ -40,8 +40,9 @@ t_votes_df = n_votes_df.transpose()
 # plt.show()
 
 
+image_id = '10'
 # Get the confidence of respondents who answered yes and no respectively
-r_df = response_df[response_df.img_id == 7]
+r_df = response_df[response_df.img_id == int(image_id)]
 
 u_yes_per = []
 u_no_per = []
@@ -83,7 +84,7 @@ for name in ['Yes', 'No']:
 		plt.hist(u_no_per)
 	plt.xlabel('Confidence ' + name + '%')
 	plt.xlim((50,100))
-	plt.savefig('analysis/'+ name + '_confidence_histogram.pdf', format="pdf", bbox_inches='tight', dpi=500)
+	plt.savefig('analysis/' + image_id + '_' + name + '_confidence_histogram.pdf', format="pdf", bbox_inches='tight', dpi=500)
 	plt.close()
 
 for name in ['yes', 'no']:
@@ -93,7 +94,7 @@ for name in ['yes', 'no']:
 		plt.hist(e_no_per)
 	plt.xlabel('Predicted ' + name + '%')
 	plt.xlim((0,100))
-	plt.savefig('analysis/'+ name + '_estimated_histogram.pdf', format="pdf", bbox_inches='tight', dpi=500)
+	plt.savefig('analysis/' + image_id + '_' + name + '_estimated_histogram.pdf', format="pdf", bbox_inches='tight', dpi=500)
 	plt.close()
 
 # plt.show()
