@@ -25,7 +25,7 @@ gt_df = pd.read_csv('ground_truth.csv')
 
 response_df = response_df[response_df['username']!= 'manaswi']
 # response_df = response_df[response_df['username'].isin(['jonf', 'chungyi', 'philip', 'teja', 'esther'])]
-response_df = response_df[response_df['username']!= 'annie'] # yang', 'manoj', 'dhruv'])]
+# response_df = response_df[response_df['username']!= 'annie'] # yang', 'manoj', 'dhruv'])]
 # response_df = response_df[response_df['username']!= 'esther'] # yang', 'manoj', 'dhruv'])]
 
 
@@ -98,7 +98,7 @@ print "\n Majority Voting Results\n", mj_results
 # plot_results(mj_results, 'majority_voting.png')
 
 """
-Method 3: Confidence-weighted Voting
+Method 2: Confidence-weighted Voting
 """
 results = []
 for image_id in image_id_list:
@@ -132,7 +132,7 @@ cw_results = cw_results.drop(['image_id'], axis=1)
 print "\n Confidence-weighted Voting Results\n", cw_results
 
 """
-Method 2: Surprisingly Popular (SP) Algorithm
+Method 3: Surprisingly Popular (SP) Algorithm
 Relies on Bayesian Truth Serum (BTS) score
 """
 
