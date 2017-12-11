@@ -231,6 +231,8 @@ for image_id in image_id_list:
 	results.append((image_id, gt_df.ix[image_id]['correct'], predicted_answer))
 
 sp_results = pd.DataFrame(results, columns=['image_id', 'correct', 'predicted'])
+sp_results.index = image_id_list
+sp_results = sp_results.drop(['image_id'], axis=1)
 print "\n Surprisingly Popular (SP) Results\n", sp_results
 
 
