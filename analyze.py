@@ -23,13 +23,20 @@ image_id_list = range(1,11)
 response_df = pd.read_csv('response.csv')
 gt_df = pd.read_csv('ground_truth.csv')
 
-response_df = response_df[response_df['username'] != 'manaswi']
+response_df = response_df[response_df['username']!= 'manaswi']
+# response_df = response_df[response_df['username'].isin(['jonf', 'chungyi', 'philip', 'teja', 'esther'])]
+response_df = response_df[response_df['username']!= 'annie'] # yang', 'manoj', 'dhruv'])]
+# response_df = response_df[response_df['username']!= 'esther'] # yang', 'manoj', 'dhruv'])]
+
+
+n = len(response_df['username'].unique()) # number of respondents
+print "Total number of respondents: ", n
 
 gt_df.index = image_id_list
 gt_df = gt_df.drop(['image_id'], axis=1)
 
 # Format dataframe to have image_id_list as rows and each question's answer as column
-
+# image_id_list = [7]
 rows = []
 for image_id in image_id_list:
 
@@ -49,10 +56,8 @@ for image_id in image_id_list:
 		rows.append((image_id, answer, user_confidence, percent_agreement, username))
 			
 analyze_df = pd.DataFrame(rows, columns=['image_id', 'vote', 'confidence', 'percent_agreement', 'username'])
-
-# To handle 0s in log transformation for SP algo, changing 1.0 agreement to 0.99
-# analyze_df.loc[analyze_df['percent_agreement'] == 1.0, 'percent_agreement'] = 0.99
 print analyze_df
+
 
 """
 Method 1: majority voting
@@ -93,6 +98,40 @@ print "\n Majority Voting Results\n", mj_results
 # plot_results(mj_results, 'majority_voting.png')
 
 """
+Method 3: Confidence-weighted Voting
+"""
+results = []
+for image_id in image_id_list:
+
+	correct = gt_df.ix[image_id]['correct']
+
+	a_df = analyze_df[analyze_df.image_id == image_id]
+
+	yes_score = 0
+	no_score = 0
+	for idx, row in a_df.iterrows():
+		
+		if row['vote'] == 'yes':
+			yes_score += row['confidence']
+			no_score += 1 - row['confidence']
+		else: 
+			yes_score += 1 - row['confidence']
+			no_score += row['confidence']
+		
+	# Errs towards yes'
+	if yes_score >= no_score:
+		selected_answer = 'yes'
+	else:
+		selected_answer = 'no'
+
+	results.append((image_id, yes_score,no_score, correct, selected_answer))
+
+cw_results = pd.DataFrame(results, columns=['image_id', 'yes_score', 'no_score', 'correct','predicted'])
+cw_results.index = image_id_list
+cw_results = cw_results.drop(['image_id'], axis=1)
+print "\n Confidence-weighted Voting Results\n", cw_results
+
+"""
 Method 2: Surprisingly Popular (SP) Algorithm
 Relies on Bayesian Truth Serum (BTS) score
 """
@@ -102,12 +141,12 @@ def take_log_a_by_b(a, b):
 	c = math.pow(10, -6)
 	return math.log(c + (a / (b + c)))
 
-n = 11 # number of respondents
 results = []
+# image_id_list = [7]
 for image_id in image_id_list:
 	a_df = analyze_df[analyze_df.image_id == image_id]
 	
-	print "\nImage: ", image_id
+	# print "\nImage: ", image_id
 
 	# Only run the algorithm if there are disagreements
 	counts = a_df['vote'].value_counts()
@@ -119,7 +158,7 @@ for image_id in image_id_list:
 		xk_mean_yes = mj_results.ix[image_id]['yes'].astype('double') / n
 		xk_mean_no = mj_results.ix[image_id]['no'].astype('double') / n
 
-		print "step1a:", xk_mean_yes, xk_mean_no
+		# print "step1a:", xk_mean_yes, xk_mean_no
 
 		# Step 1b: Geometric mean yk_gmean of the predictions of percent agreement with answer k
 		yk_product_yes = 1
@@ -136,7 +175,7 @@ for image_id in image_id_list:
 		yk_gmean_yes = yk_product_yes ** (1.0 / n)
 		yk_gmean_no = yk_product_no ** (1.0 / n)
 
-		print "step1b:", yk_gmean_yes, yk_gmean_no
+		# print "step1b:", yk_gmean_yes, yk_gmean_no
 
 		# Step 2: BTS score u_r for each respondent r
 		bts_scores = []
@@ -157,7 +196,7 @@ for image_id in image_id_list:
 			bts_scores.append((row['username'], u_r, row['vote']))
 		
 		bts_r_df = pd.DataFrame(bts_scores, columns=['username', 'bts_score', 'vote'])
-		print "step2: BTS Score\n", bts_r_df
+		# print "step2: BTS Score\n", bts_r_df
 
 		# Step 3: Average BTS score ur_mean_k of all respondents endoring answer k
 		# Get yes/no counts
@@ -171,7 +210,7 @@ for image_id in image_id_list:
 		else:
 			ur_mean_no = bts_r_df[bts_r_df.vote == 'no']['bts_score'].sum()/ (n * xk_mean_no)
 
-		print "step3:", ur_mean_yes, ur_mean_no
+		# print "step3:", ur_mean_yes, ur_mean_no
 
 		# Step 4: Choose the answer k that has the maximum score
 		# Errs towards yes'
@@ -187,7 +226,7 @@ for image_id in image_id_list:
 		else:
 			predicted_answer = 'no'
 
-	print "image id:", image_id, predicted_answer
+	# print "image id:", image_id, predicted_answer
 
 	results.append((image_id, gt_df.ix[image_id]['correct'], predicted_answer))
 
