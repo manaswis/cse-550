@@ -9,34 +9,41 @@ matplotlib.style.use('ggplot')
 pd.set_option('display.max_rows', 500)
 
 def plot_results(plot_df, filename):
-	plot_df.index = plot_df.image_id
-	plot_df = plot_df.drop(['correct'], axis=1)
-	plot_df.plot.bar(rot=0)
+	fig, ax = plt.subplots()
+	# plot_df = plot_df.drop(['correct', 'predicted'], axis=1)
+	plot_df.plot.bar(rot=0, ax=ax)
+	# ax.legend(["yes score", "no score"]);
 	plt.xlabel('Image IDs')
 	plt.ylabel('Counts')
 	plt.savefig('analysis/' + filename, format="pdf", bbox_inches='tight', dpi=500)
-	# plt.show()
+	plt.show()
 
 image_id_list = range(1,11)
 
 # Get input files
-response_df = pd.read_csv('response.csv')
 gt_df = pd.read_csv('ground_truth.csv')
+gt_df.index = image_id_list
+gt_df = gt_df.drop(['image_id'], axis=1)
 
+response_df = pd.read_csv('response.csv')
 response_df = response_df[response_df['username']!= 'manaswi']
 # response_df = response_df[response_df['username'].isin(['jonf', 'chungyi', 'philip', 'teja', 'esther'])]
-# response_df = response_df[response_df['username']!= 'annie'] # yang', 'manoj', 'dhruv'])]
-# response_df = response_df[response_df['username']!= 'esther'] # yang', 'manoj', 'dhruv'])]
 
+# Remove one by one the users
+# Q7
+response_df = response_df[response_df['username']!= 'annie'] # yang', 'manoj', 'dhruv'])]
+response_df = response_df[response_df['username']!= 'dhruv'] # yang', 'manoj', 'dhruv'])]
+
+# # Q10
+response_df = response_df[response_df['username']!= 'liang'] # yang', 'manoj', 'dhruv'])]
+response_df = response_df[response_df['username']!= 'yang'] # yang', 'manoj', 'dhruv'])]
 
 n = len(response_df['username'].unique()) # number of respondents
 print "Total number of respondents: ", n
 
-gt_df.index = image_id_list
-gt_df = gt_df.drop(['image_id'], axis=1)
 
 # Format dataframe to have image_id_list as rows and each question's answer as column
-# image_id_list = [7]
+image_id_list = [7]
 rows = []
 for image_id in image_id_list:
 
@@ -95,7 +102,7 @@ mj_results['predicted'] = np.where(mj_results['yes'] > mj_results['no'], 'yes', 
 print "\n Majority Voting Results\n", mj_results
 
 # Plot results
-# plot_results(mj_results, 'majority_voting.png')
+# plot_results(mj_results, 'majority_voting.pdf')
 
 """
 Method 2: Confidence-weighted Voting
@@ -130,6 +137,9 @@ cw_results = pd.DataFrame(results, columns=['image_id', 'yes_score', 'no_score',
 cw_results.index = image_id_list
 cw_results = cw_results.drop(['image_id'], axis=1)
 print "\n Confidence-weighted Voting Results\n", cw_results
+
+# Plot results
+# plot_results(cw_results, 'confidence_voting.pdf')
 
 """
 Method 3: Surprisingly Popular (SP) Algorithm
@@ -196,6 +206,18 @@ for image_id in image_id_list:
 			bts_scores.append((row['username'], u_r, row['vote']))
 		
 		bts_r_df = pd.DataFrame(bts_scores, columns=['username', 'bts_score', 'vote'])
+		bts_plot = bts_r_df
+		bts_plot = bts_plot.drop(['username', 'vote'], axis=1)
+		
+		fig, ax = plt.subplots()
+		bts_plot.index = range(1, n+1)
+		bts_plot.plot(ax=ax)
+		plt.xlim((0,n+1))
+		ax.legend(["voter score"]);
+		plt.xlabel('Participants')
+		plt.ylabel('Value')
+		plt.savefig('analysis/bts_4.pdf', format="pdf", bbox_inches='tight', dpi=500)
+		plt.show()
 		# print "step2: BTS Score\n", bts_r_df
 
 		# Step 3: Average BTS score ur_mean_k of all respondents endoring answer k
@@ -210,7 +232,7 @@ for image_id in image_id_list:
 		else:
 			ur_mean_no = bts_r_df[bts_r_df.vote == 'no']['bts_score'].sum()/ (n * xk_mean_no)
 
-		# print "step3:", ur_mean_yes, ur_mean_no
+		print "step3:", ur_mean_yes, ur_mean_no
 
 		# Step 4: Choose the answer k that has the maximum score
 		# Errs towards yes'
@@ -236,8 +258,6 @@ sp_results = sp_results.drop(['image_id'], axis=1)
 print "\n Surprisingly Popular (SP) Results\n", sp_results
 
 
-
-
-
 # Plot results
 # plot_results(sp_results, 'surprisingly_popular.pdf')
+
